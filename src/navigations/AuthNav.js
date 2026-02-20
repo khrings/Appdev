@@ -1,5 +1,5 @@
 import { createStackNavigator } from '@react-navigation/stack';
-import { ROUTES } from '../utils';
+import ROUTES from '../utils/routes';
 
 import Login from '../screens/auth/Login';
 import HomeScreen from '../screens/HomeScreen';

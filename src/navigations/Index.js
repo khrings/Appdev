@@ -1,16 +1,11 @@
-import {createStackNavigator} from '@react-navigation/stack';
-import {View} from 'react-native';
-import Main from '../screens/Main';
-import {NavigationContainer, Navigator} from '@react-navigation/native';
+import React from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import MainNav from './MainJav';
 
 export default () => {
     return (
-        <view>
-            <NavigationContainer>
-                <MainNav/>
-            </NavigationContainer>
-
-        </view>
-
+        <NavigationContainer>
+            <MainNav/>
+        </NavigationContainer>
     )
 }
