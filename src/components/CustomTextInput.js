@@ -6,20 +6,36 @@ const CustomTextInput = ({
   label,
   labelStyle,
   value,
+  onChangeText,
   containerStyle,
   textStyle,
+  secureTextEntry = false,
+  keyboardType = 'default',
+  autoCapitalize = 'sentences',
 }) => {
   return (
     <View style={containerStyle}>
-      <Text style={labelStyle}>{label}</Text>
+      {label && <Text style={labelStyle}>{label}</Text>}
       <TextInput
         placeholder={placeholder}
-        onChangeText={value}
+        value={value}
+        onChangeText={onChangeText}
+        secureTextEntry={secureTextEntry}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
+        placeholderTextColor="#999"
         style={[
           textStyle,
           {
-            width: '80%',
-            borderBottomWidth: 1,
+            width: '100%',
+            borderWidth: 1,
+            borderColor: '#d1d5db',
+            borderRadius: 8,
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+            backgroundColor: 'white',
+            color: '#333',
+            fontSize: 15,
           },
         ]}
       />

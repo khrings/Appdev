@@ -1,11 +1,11 @@
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
-import MainNav from './MainJav';
+import AuthNav from './AuthNav';
 
 export default () => {
     return (
         <NavigationContainer>
-            <MainNav/>
+            <AuthNav/>
         </NavigationContainer>
     )
 }
