@@ -4,28 +4,32 @@ import { useNavigation } from '@react-navigation/native';
 
 import CustomButton from '../../components/CustomButton';
 import CustomTextInput from '../../components/CustomTextInput';
-import { useDispatch, useSelector } from 'react-redux';
-import { userLogin } from '../../app/reducers/auth';
 import { SCREENS } from '../../utils/routes';
 import IMAGES from '../../utils/image';
 
-const Login = () => {
+const Register = () => {
   const navigation = useNavigation();
+  const [fullName, setFullName] = useState('');
   const [emailAdd, setEmailAdd] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
-
-  const dispatch = useDispatch();
-  const { isLoading } = useSelector(state => state.auth);
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  const handleLogin = () => {
+  const handleRegister = () => {
     const newErrors = {};
+
+    // Validate full name
+    if (!fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    } else if (fullName.trim().length < 2) {
+      newErrors.fullName = 'Full name must be at least 2 characters';
+    }
 
     // Validate email
     if (!emailAdd.trim()) {
@@ -41,20 +45,35 @@ const Login = () => {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
+    // Validate confirm password
+    if (!confirmPassword.trim()) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
     setErrors({});
+    setIsLoading(true);
 
-    // Dispatch Redux action to login
-    dispatch(
-      userLogin({
-        email: emailAdd,
-        password: password,
-      })
-    );
+    // Simulate registration API call
+    setTimeout(() => {
+      setIsLoading(false);
+      Alert.alert(
+        'Registration Successful',
+        'Your account has been created successfully!',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate(SCREENS.LOGIN),
+          },
+        ]
+      );
+    }, 1500);
   };
 
   return (
@@ -76,13 +95,29 @@ const Login = () => {
             />
           </View>
 
-          <Text style={styles.title}>Admin Login</Text>
-          <Text style={styles.subtitle}>Welcome back! Please login to your account.</Text>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Join PawStuff today!</Text>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Full Name</Text>
+            <CustomTextInput
+              placeholder={'John Doe'}
+              value={fullName}
+              onChangeText={(val) => {
+                setFullName(val);
+                if (errors.fullName) setErrors({ ...errors, fullName: null });
+              }}
+              containerStyle={styles.input}
+              textStyle={styles.textInput}
+              autoCapitalize="words"
+            />
+            {errors.fullName && <Text style={styles.errorText}>{errors.fullName}</Text>}
+          </View>
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email Address</Text>
             <CustomTextInput
-              placeholder={'admin@divino.com'}
+              placeholder={'you@example.com'}
               value={emailAdd}
               onChangeText={(val) => {
                 setEmailAdd(val);
@@ -99,7 +134,7 @@ const Login = () => {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
             <CustomTextInput
-              placeholder={'Enter your password'}
+              placeholder={'At least 6 characters'}
               value={password}
               onChangeText={(val) => {
                 setPassword(val);
@@ -110,30 +145,36 @@ const Login = () => {
               secureTextEntry={true}
             />
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+            {!errors.password && <Text style={styles.hintText}>Minimum 6 characters</Text>}
           </View>
 
-          <TouchableOpacity 
-            style={styles.rememberMeContainer}
-            onPress={() => setRememberMe(!rememberMe)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-              {rememberMe && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-            <Text style={styles.rememberMeText}>Remember me</Text>
-          </TouchableOpacity>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Confirm Password</Text>
+            <CustomTextInput
+              placeholder={'Re-enter your password'}
+              value={confirmPassword}
+              onChangeText={(val) => {
+                setConfirmPassword(val);
+                if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: null });
+              }}
+              containerStyle={styles.input}
+              textStyle={styles.textInput}
+              secureTextEntry={true}
+            />
+            {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
+          </View>
 
           <CustomButton 
-            label={'Sign In'} 
-            onPress={handleLogin}
-            buttonStyle={styles.loginButton}
+            label={'Create Account'} 
+            onPress={handleRegister}
+            buttonStyle={styles.registerButton}
             loading={isLoading}
           />
 
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate(SCREENS.REGISTER)}>
-              <Text style={styles.registerLink}>Register here</Text>
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate(SCREENS.LOGIN)}>
+              <Text style={styles.loginLink}>Login here</Text>
             </TouchableOpacity>
           </View>
 
@@ -175,8 +216,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoImage: {
-    width: 320,
-    height: 320,
+    width: 200,
+    height: 200,
   },
   title: {
     fontSize: 30,
@@ -213,42 +254,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 5,
   },
-  rememberMeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 25,
-    width: '100%',
+  hintText: {
+    color: '#6b7280',
+    fontSize: 12,
+    marginTop: 5,
   },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    borderRadius: 4,
-    marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
-  },
-  checkboxChecked: {
-    backgroundColor: '#2563eb',
-    borderColor: '#2563eb',
-  },
-  checkmark: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  rememberMeText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  loginButton: {
+  registerButton: {
     marginTop: 5,
     marginBottom: 20,
     width: '100%',
   },
-  registerContainer: {
+  loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -256,11 +272,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     width: '100%',
   },
-  registerText: {
+  loginText: {
     fontSize: 14,
     color: '#666',
   },
-  registerLink: {
+  loginLink: {
     fontSize: 14,
     color: '#2563eb',
     fontWeight: '600',
@@ -274,4 +290,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Login;
+export default Register;
