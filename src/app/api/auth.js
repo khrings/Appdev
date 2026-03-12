@@ -1,8 +1,5 @@
-// Pawstuff API configuration
-// Android Emulator: Use 10.0.2.2 to access host machine's localhost
-// iOS Simulator: Use localhost directly
-// Physical Device: Replace with your computer's local IP (e.g., 'http://192.168.1.100:8000')
-const BASE_URL = 'http://10.0.2.2:8000'; // For Android Emulator connecting to localhost:8000
+
+const BASE_URL = 'http://localhost:8000/api'; 
 
 const getHeaders = (token = null) => {
   const headers = {
@@ -19,31 +16,47 @@ const getHeaders = (token = null) => {
 
 export async function authLogin({ email, password }) {
   try {
-    const response = await fetch(`${BASE_URL}/auth/login`, {
+    console.log('🟢 API Call - URL:', `${BASE_URL}/login`);
+    console.log('🟢 API Call - Email:', email);
+    
+    const response = await fetch(`${BASE_URL}/login`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ email, password }),
     });
 
+    console.log('🟢 API Response - Status:', response.status);
+    console.log('🟢 API Response - OK:', response.ok);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log('🔴 API Error Data:', errorData);
+      
+      if (response.status === 401 || response.status === 404) {
+        throw new Error('Account not found or invalid credentials. Please check your email and password.');
+      }
+      
+      if (response.status === 422) {
+        throw new Error(errorData.message || 'Invalid email or password format.');
+      }
+      
       throw new Error(errorData.message || `Login failed: ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('🟢 API Success - Data:', data);
     
-    // Expected response format: { user: {...}, token: '...' }
-    // Adjust based on your actual API response structure
+   
     return {
       id: data.user?.id || data.id,
       email: data.user?.email || data.email,
       name: data.user?.name || data.name,
       token: data.token,
       loginTime: new Date().toISOString(),
-      ...data.user, // Include any additional user fields
+      ...data.user, 
     };
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('🔴 Login API Error:', error);
     throw error;
   }
 }
@@ -91,7 +104,7 @@ export async function authLogout(token) {
     return { success: true };
   } catch (error) {
     console.error('Logout error:', error);
-    // Still return success for local logout even if API call fails
+   
     return { success: true };
   }
 }

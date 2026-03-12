@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Alert, StyleSheet, Text, View, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import CustomButton from '../../components/CustomButton';
 import CustomTextInput from '../../components/CustomTextInput';
 import { useDispatch, useSelector } from 'react-redux';
-import { userLogin } from '../../app/reducers/auth';
+import { userLogin, resetLogin } from '../../app/reducers/auth';
 import { SCREENS } from '../../utils/routes';
 import IMAGES from '../../utils/image';
 
@@ -17,7 +17,40 @@ const Login = () => {
   const [errors, setErrors] = useState({});
 
   const dispatch = useDispatch();
-  const { isLoading } = useSelector(state => state.auth);
+  const { isLoading, isError, errorMessage } = useSelector(state => state.auth);
+
+  // Reset loading state on mount to fix stuck loading
+  useEffect(() => {
+    console.log('🟡 Login screen mounted - resetting login state');
+    dispatch(resetLogin());
+  }, []);
+
+  // Handle error state
+  useEffect(() => {
+    if (isError) {
+      const errorMsg = errorMessage || 'Login failed. Please check your credentials.';
+      
+      // Check if it's an account not found error
+      if (errorMsg.toLowerCase().includes('not found') || 
+          errorMsg.toLowerCase().includes('invalid') ||
+          errorMsg.toLowerCase().includes('401')) {
+        Alert.alert(
+          'Account Not Found',
+          'This account is not registered. Please register first or check your email and password.',
+          [
+            { text: 'Register', onPress: () => navigation.navigate(SCREENS.REGISTER) },
+            { text: 'Try Again', onPress: () => dispatch(resetLogin()), style: 'cancel' }
+          ]
+        );
+      } else {
+        Alert.alert(
+          'Login Failed',
+          errorMsg,
+          [{ text: 'OK', onPress: () => dispatch(resetLogin()) }]
+        );
+      }
+    }
+  }, [isError, errorMessage]);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,6 +58,10 @@ const Login = () => {
   };
 
   const handleLogin = () => {
+    console.log('🟢 Login button clicked!');
+    console.log('🟢 Current loading state:', isLoading);
+    console.log('🟢 Email:', emailAdd, 'Password:', password);
+    
     const newErrors = {};
 
     // Validate email
@@ -42,19 +79,22 @@ const Login = () => {
     }
 
     if (Object.keys(newErrors).length > 0) {
+      console.log('🔴 Validation errors:', newErrors);
       setErrors(newErrors);
       return;
     }
 
     setErrors({});
 
-    // Dispatch Redux action to login
+    console.log('🟢 Dispatching login action...');
+    // Dispatch Redux action to login diri mo set ka data
     dispatch(
       userLogin({
         email: emailAdd,
         password: password,
       })
     );
+    console.log('🟢 Login action dispatched!');
   };
 
   return (

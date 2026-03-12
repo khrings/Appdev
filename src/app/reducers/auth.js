@@ -7,10 +7,11 @@ import {
 } from '../actions';
 import { PURGE } from 'redux-persist';
 
-const INITIAL_STATE = {
-  data: null,
+const INITIAL_STATE = { //storage or initialization sa data
+  data: null, // null kay wala initializa ang data 
   isLoading: false,
   isError: false,
+  errorMessage: null,
 };
 
 export default function reducer(state = INITIAL_STATE, action) {
@@ -20,9 +21,10 @@ export default function reducer(state = INITIAL_STATE, action) {
     case USER_LOGIN_REQUEST:
       return {
         ...state,
-        data: null,
+        data: null, 
         isLoading: true,
         isError: false,
+        errorMessage: null,
       };
 
     case USER_LOGIN_COMPLETED:
@@ -31,6 +33,7 @@ export default function reducer(state = INITIAL_STATE, action) {
         data: action.payload,
         isLoading: false,
         isError: false,
+        errorMessage: null,
       };
 
     case USER_LOGIN_ERROR:
@@ -38,6 +41,7 @@ export default function reducer(state = INITIAL_STATE, action) {
         data: null,
         isLoading: false,
         isError: true,
+        errorMessage: action.payload || 'Login failed. Please try again.',
       };
 
     case USER_LOGIN_RESET:

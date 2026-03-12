@@ -8,17 +8,45 @@ import {
   USER_LOGIN_REQUEST,
 } from '../actions';
 
-export function* userLoginAsync(action) {
-  yield put({ type: USER_LOGIN_REQUEST });
-  try {
-    const response = yield call(authLogin, action.payload);
 
+const mockLogin = async ({ email, password }) => {
+  console.log('🟢 Mock Login Called:', { email, password });
+  
+ 
+  await new Promise(resolve => setTimeout(resolve, 800));
+  
+  console.log('🟢 Mock Login - Returning success');
+  
+  
+  return {
+    id: 1,
+    email: email,
+    name: 'Test User',
+    token: 'mock-token-12345',
+    loginTime: new Date().toISOString(),
+  };
+};
+
+export function* userLoginAsync(action) {
+  console.log('🔴 userLoginAsync started with:', action.payload);
+  yield put({ type: USER_LOGIN_REQUEST });
+  
+  try {
+   
+    console.log('🔴 Calling authLogin API...');
+    const response = yield call(authLogin, action.payload); 
+    
+    console.log('🔴 API login response:', response);
     yield put({ type: USER_LOGIN_COMPLETED, payload: response });
+    console.log('🔴 USER_LOGIN_COMPLETED dispatched');
+    
   } catch (error) {
+    console.error('🔴 Login error:', error);
     yield put({ type: USER_LOGIN_ERROR, payload: error.message });
   }
 }
 
-export function* userLogin() {
+export function* userLogin() { 
+  
   yield takeEvery(USER_LOGIN, userLoginAsync);
 }
